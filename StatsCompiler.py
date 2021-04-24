@@ -750,12 +750,10 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import time
 
-
 # The year below controls what year of stats the program will grab
 
 year = "2009"
 team_index_url = "http://cfbstats.com/" + year + "/team/index.html"
-
 
 # Will be used to create team objects which will have attributes such as name, url, conference, record, and an attribute for each stat as well as an object for each game played.
 
@@ -1869,37 +1867,44 @@ table_rows = stats_table.find_all("tr")
 # The first row in useless for this program and is removed below
 table_rows.pop(0)
 
-# loops through each row and names each stat while separating team stats from opponent stats to a different list. .strip is removing whitespace at the beginning and end of strings. Would like to use float to convert strings to numbers, but can't because time of possession won't convert to a number.
+# splits and strips each cell, then adds them to a specified dictionary. .strip is removing whitespace at the beginning and end of strings. Would like to use float to convert strings to numbers, but can't because time of possession won't convert to a number.
+def process_cell(cell, l):
+    cell_text = cell.text
+
+    if cell_text == "-":
+        cell_text = "0"
+
+    if "2-Point Conversions:" in cell_text:
+        splt_char = "-"
+        cell_temp = cell_text.split(splt_char)
+        cell_split = splt_char.join(cell_temp[:2]), splt_char.join(cell_temp[2:])
+    else:
+        cell_split = cell_text.split("-")
+
+    for c in cell_split:
+        if c != "":
+            l.append(c.strip())
+
+
+# loops through each row and names each stat while separating team stats from opponent stats to a different list.
 for tr in table_rows:
-    cell1 = tr.find("td")
-    cell1_split = cell1.text.split("-")
-    for c in cell1_split:
-        stats.append(c.strip())
-
+    # Find each of the three cells isolated in separate variables
+    cell1 = tr.find_next()
     cell2 = cell1.find_next()
-    cell2_text = cell2.text
-
-    if cell2_text == "-":
-        cell2_text = "0"
-    cell2_split = cell2_text.split("-")
-
-    for c in cell2_split:
-        team_stats.append(c.strip())
-
     cell3 = cell2.find_next()
-    cell3_text = cell3.text
 
-    if cell3_text == "-":
-        cell3_text = "0"
-    cell3_split = cell3_text.split("-")
+    # process each cell and append results to separate lists
+    process_cell(cell1, stats)
+    process_cell(cell2, team_stats)
+    process_cell(cell3, opp_stats)
 
-    for c in cell3_split:
-        opp_stats.append(c.strip())
+zipped_team_stats = zip(stats, team_stats)
+zipped_opp_stats = zip(stats, opp_stats)
 
-for stat, team_stat in zip(stats, team_stats):
+for stat, team_stat in zipped_team_stats:
     team_stats_dict[stat] = team_stat
 
-for stat, opp_stat in zip(stats, opp_stats):
+for stat, opp_stat in zipped_opp_stats:
     opp_stats_dict[stat] = opp_stat
 
 print(team_stats_dict)
