@@ -1836,11 +1836,72 @@ pageTracker._trackPageview();
 # Scrape stats from individual team pages
 ##############################################################################################################
 
-
-stats = []
+team_id = 0
+team_name = "Boston College"
+team_stat_titles = [
+    "Points/Game",
+    "Games",
+    "Total Points",
+    "First Downs",
+    "Rush First Downs",
+    "Pass First Downs",
+    "First Downs by Penalty",
+    "Rush Yards/Att",
+    "Rush Att",
+    "Rush Yards",
+    "Rush TDs",
+    "Pass Rating",
+    "Pass Yards",
+    "Pass Att",
+    "Pass Comp",
+    "INTs",
+    "Pass TDs",
+    "Total Off Yards/Play",
+    "Total Off Plays",
+    "Total Off Yards",
+    "Punt Yards/Return",
+    "Punt Returns",
+    "Punt Return Yards",
+    "Punt Return TDs",
+    "KO Yards/Return",
+    "KO Returns",
+    "KO Return Yards",
+    "KO Return TDs",
+    "Yards/Punt",
+    "Punts",
+    "Punt Yards",
+    "INT returns",
+    "INT Yards",
+    "INT TDs",
+    "Fumbles",
+    "Fumbles Lost",
+    "Penalties",
+    "Penalty Yards",
+    "TOP/Game",
+    "3rd Down Conversion %",
+    "3rd Down Conversion Att",
+    "3rd Down Conversions",
+    "4th Down Conversion %",
+    "4th Down Conversion Att",
+    "4th Down Conversions",
+    "RZ Success %",
+    "RZ Att",
+    "RZ Scores",
+    "FG Success %",
+    "FG Att",
+    "FGs Made",
+    "PAT Success %",
+    "PAT Att",
+    "PATs Made",
+    "2-Point Success %",
+    "2-Point Att",
+    "2-Point Conversions",
+]
+opp_stat_titles = ["Opp " + title for title in team_stat_titles]
+stat_titles = team_stat_titles + opp_stat_titles
+all_stats = []
 team_stats = []
 opp_stats = []
-
 
 # These are populated with the stat names and actual numbers
 team_stats_dict = {}
@@ -1894,18 +1955,22 @@ for tr in table_rows:
     cell3 = cell2.find_next()
 
     # process each cell and append results to separate lists
-    process_cell(cell1, stats)
     process_cell(cell2, team_stats)
     process_cell(cell3, opp_stats)
 
-zipped_team_stats = zip(stats, team_stats)
-zipped_opp_stats = zip(stats, opp_stats)
+team_stats.extend(opp_stats)
 
-for stat, team_stat in zipped_team_stats:
-    team_stats_dict[stat] = team_stat
+# Inserts the team name as the first list item
+stat_titles.insert(0, "Team")
+team_stats.insert(0, team_name)
 
-for stat, opp_stat in zipped_opp_stats:
-    opp_stats_dict[stat] = opp_stat
+all_stats.append(team_stats)
 
-print(team_stats_dict)
-print(opp_stats_dict)
+stats_df = pd.DataFrame(all_stats, columns=stat_titles)
+
+# print(team_names)
+# print(stats)
+# print(team_stats)
+# print(opp_stats)
+
+print(stats_df)
