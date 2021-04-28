@@ -13,7 +13,7 @@ class Compile:
     def __init__(self, year):
         # initial names
         self.year = year
-        self.test_url = ["http://cfbstats.com/2009/team/522/index.html"]
+        self.test_url = ["http://www.cfbstats.com/2012/team/472/index.html"]
         self.team_urls = []
         self.team_stats = []
         self.stats = []
@@ -98,6 +98,8 @@ class Compile:
         self.team_names = self.team_index["Team"].to_list()
 
     def compile_stats(self):
+        html_class = req.GET_HTML(1)
+
         # Run compile_info function so urls and team names are compiled before running this code
         self.compile_info()
         # Loop through each url and send a GET request to each
@@ -105,8 +107,7 @@ class Compile:
             # Clears list after each team
             single_team_stats = []
             single_opp_stats = []
-
-            html = req.GET_HTML.soup_recipe(url)
+            html = html_class.soup_recipe(url)
             # Grabs stats table
             stat_table = html.find("table", class_="team-statistics")
             # Make list of rows
@@ -129,16 +130,16 @@ class Compile:
             self.team_stats = single_team_stats + single_opp_stats
 
             self.stats.append(self.team_stats)
-            self.stats2 = []
 
         self.stats_df = pd.DataFrame(self.stats, columns=self.stat_titles)
 
-        # Add team names as first column of stats_df
+        # Add team names column at the start
         self.stats_df.insert(0, "Team", self.team_names)
 
         # create dict to change dtypes
         dtype_dict = {}
         self.stat_titles.insert(0, "Team")
+
         for title in self.stat_titles:
             dtype_dict[title] = "float64"
 
@@ -166,15 +167,11 @@ class Compile:
         if cell_text == "-":
             cell_text = "0"
 
-        if "2-Point Conversions:" in cell_text:
-            splt_char = "-"
-            cell_temp = cell_text.split(splt_char)
-            cell_split = splt_char.join(cell_temp[:2]), splt_char.join(cell_temp[2:])
-        else:
-            cell_split = cell_text.split("-")
+        cell_split = cell_text.split(" - ")
 
         for c in cell_split:
-            if c != "":
-                stripped = c.strip(" %")
-                replaced = stripped.replace(",", "")
-                stat_list.append(replaced)
+            if c == "":
+                c = "0"
+            stripped = c.strip(" %")
+            replaced = stripped.replace(",", "")
+            stat_list.append(replaced)

@@ -24,7 +24,7 @@ class Index:
 
     def index_teams(self):
         index_url = "http://cfbstats.com/" + self.year + "/team/index.html"
-        index_html = get.GET_HTML.soup_recipe(index_url)
+        index_html = get.GET_HTML(1).soup_recipe(index_url)
         conf_tables = index_html.find_all(class_="conference")
 
         # Loop through each conf table and find team data
